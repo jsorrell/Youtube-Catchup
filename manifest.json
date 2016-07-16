@@ -1,0 +1,27 @@
+{
+  "manifest_version": 2,
+  "name": "Youtube Catchup",
+  "version": "0.0.0.1",
+
+  "description": "This extension will create and show a playlist of unwatched youtube videos on a channel, ordered by reverse upload dates",
+  "browser_action": {
+    "default_icon": {
+      "19": "images/icon19.png"
+    }
+  },
+  "background": {
+    "scripts": ["jquery-3.0.0.min.js", "multipart.js", "eventPage.js"],
+    "persistent": false
+  },
+  "permissions": [
+    "tabs", "*://www.youtube.com/*", "identity"
+  ],
+  "oauth2": {
+      "client_id": "259023141465-7ha1a7ap36r3rfn5p5f39vbkksil80qc.apps.googleusercontent.com",
+      "scopes": [
+        "https://www.googleapis.com/auth/youtubepartner",
+        "https://www.googleapis.com/auth/youtube",
+        "https://www.googleapis.com/auth/youtube.force-ssl"
+      ]
+  }
+}
