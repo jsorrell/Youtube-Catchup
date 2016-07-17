@@ -1,6 +1,3 @@
-// Regex-pattern to check URLs against.
-var urlRegex = /^https?:\/\/(?:[^./?#]+\.)?youtube\.com/;
-
 var token = null;
 
 var tabID = null;
@@ -104,7 +101,9 @@ function insertVideos(openerTab, playlistID, videos) {
 }
 
 function tabCreatedCallback(tab, playlistID) {
-    chrome.tabs.executeScript(tab.tabID, { file: "update_playlist.js" });
+    chrome.tabs.executeScript(tab.tabID, { file: "jquery-3.0.0.min.js" }, function() {
+        chrome.tabs.executeScript(tab.tabID, { file: "updatePlaylist.js", runAt: "document_end" });
+    });
 
     chrome.tabs.onRemoved.addListener(function (tabID) {
         if (tab.id == tabID) {
@@ -117,11 +116,10 @@ function tabCreatedCallback(tab, playlistID) {
 
 // When the button is clicked...
 chrome.browserAction.onClicked.addListener(function (tab) {
-    // ensure we are on a valid Youtube page
-    if (urlRegex.test(tab.url)) {
-        // execute content script to find unwatched videos, injecting jquery
+    if (/^https?:\/\/(?:[^./?#]+\.)?youtube\.com\/user\/[^./?#]+\/videos/.test(tab.url)) {
+        //On a youtube user videos page
         chrome.tabs.executeScript(null, { file: "jquery-3.0.0.min.js" }, function() {
-            chrome.tabs.executeScript(null, { file: "content.js" }, function (unwatched) { processUnwatched (tab, unwatched); });
+            chrome.tabs.executeScript(null, { file: "findUnwatched.js" }, function (unwatched) { processUnwatched (tab, unwatched); });
         });
     }
 });

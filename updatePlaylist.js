@@ -4,8 +4,6 @@ var lookup = {};
 lookup[playlistID] = null;
 chrome.storage.local.get(lookup, callback);
 
-chrome.runtime.sendMessage(chrome.runtime.id, { action: "load", playlistID: playlistID });
-
 function callback(res) {
     console.log(res);
     if (res[playlistID] == null) {
@@ -39,7 +37,7 @@ function updatePlaylist(changes, areaName) {
         console.log(video);
         var html = `<li class="yt-uix-scroller-scroll-unit" data-video-title="` + video.title + `" data-video-id="` + video.id + `" data-video-username="` + video.username + `" data-index="` + video.index + `">
 <span class="index">
-    ` + video.index + `
+    ` + (video.index + 1) + `
 </span>
   <a href="/watch?v=` + video.id + `&amp;list=` + playlistID + `&amp;index=` + video.index + `" class="yt-uix-sessionlink  spf-link  playlist-video clearfix        spf-link ">
   <button class="yt-uix-button yt-uix-button-size-default yt-uix-button-player-controls yt-uix-button-empty yt-uix-button-has-icon yt-uix-button-playlist-remove-item yt-uix-button-opacity spf-nolink yt-uix-tooltip" type="button" onclick=";return false;" aria-label="Remove from playlist" title="Remove from playlist"><span class="yt-uix-button-icon-wrapper"><span class="yt-uix-button-icon yt-uix-button-icon-playlist-remove-item yt-sprite"></span></span></button>
