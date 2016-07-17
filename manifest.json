@@ -10,11 +10,11 @@
     }
   },
   "background": {
-    "scripts": ["jquery-3.0.0.min.js", "multipart.js", "eventPage.js"],
+    "scripts": ["jquery-3.0.0.min.js", "eventPage.js"],
     "persistent": false
   },
   "permissions": [
-    "tabs", "*://www.youtube.com/*", "identity"
+    "tabs", "*://www.youtube.com/*", "identity", "storage"
   ],
   "oauth2": {
       "client_id": "259023141465-7ha1a7ap36r3rfn5p5f39vbkksil80qc.apps.googleusercontent.com",
@@ -23,5 +23,12 @@
         "https://www.googleapis.com/auth/youtube",
         "https://www.googleapis.com/auth/youtube.force-ssl"
       ]
-  }
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://www.youtube.com/watch?*v=*&list=*"],
+      "js": ["jquery-3.0.0.min.js", "update_playlist.js"],
+      "run_at": "document_end"
+    }
+  ]
 }
