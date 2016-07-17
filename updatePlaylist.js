@@ -1,31 +1,34 @@
-playlistID = /&list=[^&]{34}/.exec(window.location.href)[0].substring(6);
+playlistID = /(?:&list=)([^&]{34})/.exec(window.location.href)[1];
+console.log(playlistID);
 
 var lookup = {};
 lookup[playlistID] = null;
 chrome.storage.local.get(lookup, callback);
 
 function callback(res) {
-    console.log(res);
     if (res[playlistID] == null) {
         console.log("playlist not created by us");
     } else {
         console.log("playlist found");
+        updatePlaylist(res[playlistID].videos);
         chrome.storage.local.set(res, function() {
-            updatePlaylist(res[playlistID].videos);
-            chrome.storage.onChanged.addListener(updatePlaylist);
+            chrome.storage.onChanged.addListener(storageChangedCallback);
         });
     }
 }
 var index = 26;
 
-function updatePlaylist(changes, areaName) {
+function storageChangedCallback(changes, areaName) {
     if (!(areaName == "local" && changes[playlistID])) {
         console.log("No changes to make");
         return;
     }
 
+    updatePlaylist(changes[playlistID].newValue.videos);
+}
+
+function updatePlaylist(videos) {
     console.log("updating...");
-    var videos = changes[playlistID].newValue.videos;
 
     var lastIdx = parseInt($("#playlist-autoscroll-list > li:last").attr("data-index"));
     console.log("lastIdx", lastIdx);

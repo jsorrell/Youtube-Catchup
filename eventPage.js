@@ -125,6 +125,11 @@ chrome.browserAction.onClicked.addListener(function (tab) {
 });
 
 function processUnwatched(tab, unwatched) {
+    if (!unwatched) {
+        console.log("Invalid page");
+        return;
+    }
+
     if (unwatched.length)
         unwatched = unwatched[0];
     else {
@@ -137,7 +142,7 @@ function processUnwatched(tab, unwatched) {
         return;
     }
 
-    console.log("creating playlist");
+    console.log("creating playlist with " + unwatched.length + " videos:", JSON.stringify(unwatched));
     makePlaylist(tab, "Youtube Catchup", "Temporary playlist created by youtube catchup", unwatched);
 }
 
