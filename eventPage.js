@@ -35,6 +35,7 @@ function makePlaylist(openerTab, title, desc, videoIDs) {
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 console.log(errorThrown, jqXHR.responseText);
+                removeLoadingOverlay(openerTab.id);
             }
         });
     });
@@ -71,7 +72,7 @@ function insertVideos(openerTab, playlistID, videos) {
                         video.index = playlistData.videos.length;
                         playlistData.videos.push(video);
                         chrome.storage.local.set(res, function () {
-                            if (playlistData.videos.length === 1)
+                            if (playlistData.videos.length === 1) {
                                 chrome.tabs.create(
                                     {
                                         url: "https://www.youtube.com/watch?v=" + video.id + "&list=" + playlistID,
@@ -81,6 +82,8 @@ function insertVideos(openerTab, playlistID, videos) {
                                     },
                                     function (tab) { tabCreatedCallback(tab, playlistID); }
                                 );
+                                removeLoadingOverlay(openerTab.id);
+                            }
 
                             if (videos.length > 0) {
                                 insertVideos(openerTab, playlistID, videos);
@@ -92,6 +95,7 @@ function insertVideos(openerTab, playlistID, videos) {
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 console.log(errorThrown, jqXHR.responseText);
+                removeLoadingOverlay(openerTab.id);
             }
         });
     });
@@ -115,6 +119,8 @@ function tabCreatedCallback(tab, playlistID) {
 chrome.browserAction.onClicked.addListener(function (tab) {
     if (/^https?:\/\/(?:[^./?#]+\.)?youtube\.com\/user\/[^./?#]+\/videos/.test(tab.url)) {
         //On a youtube user videos page
+        showLoadingOverlay(tab.id);
+
         chrome.tabs.executeScript(null, { file: "jquery-3.0.0.min.js" }, function() {
             chrome.tabs.executeScript(null, { file: "findUnwatched.js" }, function (unwatched) { processUnwatched (tab, unwatched); });
         });
@@ -139,7 +145,6 @@ function processUnwatched(tab, unwatched) {
         return;
     }
 
-    console.log("creating playlist with " + unwatched.length + " videos:", JSON.stringify(unwatched));
     makePlaylist(tab, "Youtube Catchup", "Temporary playlist created by youtube catchup", unwatched);
 }
 
@@ -158,3 +163,45 @@ function deletePlaylist(playlistID) {
     });
 }
 
+function showLoadingOverlay(tabID, callback) {
+    chrome.tabs.executeScript(tabID, { file: "jquery-3.0.0.min.js", runAt: "document_end" }, function() {
+        chrome.tabs.insertCSS(tabID, {code: `
+            #json-overlay {
+                background: rgba(30, 30, 30, 0.8);;
+                position: fixed;
+                left: 0px;
+                top: 0px;
+                z-index: 2147483000;
+                height: 100%;
+                width: 100%;
+                overflow: hidden;
+                text-align: center;
+            }
+            #json-overlay:before {
+                content: '';
+                display: inline-block;
+                vertical-align: middle;
+                height: 100%;
+            }
+            #json-overlay img {
+                margin:auto;
+                display:inline-block;
+                margin: auto;
+                vertical-align: middle;
+                opacity: 1;
+            }
+            `,
+        }, function () {
+            chrome.tabs.executeScript(tabID, {
+                code: `$('<div id="json-overlay"><img src="` + chrome.extension.getURL('spin_load.svg') + `" /></div>').prependTo("body");`
+            }, callback);
+        });
+    });
+}
+
+function removeLoadingOverlay(tabID, callback) {
+    chrome.tabs.executeScript(tabID, { file: "jquery-3.0.0.min.js", runAt: "document_end" }, function() {
+        chrome.tabs.executeScript(tabID, { code: `$("#json-overlay").remove();`,
+        runAt: "document_end" }, callback);
+    });
+}
